@@ -57,6 +57,28 @@ class PlanProvider with ChangeNotifier {
     _selectedDayId = dayId;
     notifyListeners();
   }
+  // VẪN LÀ QUẢN LÍ LỊCH TRÌNH
+  // HÀM MỚI: Xóa một hoạt động khỏi một ngày cụ thể
+  Future<void> removeLocationFromSchedule(String dayId, ScheduleEntry entryToRemove) async {
+    // Dùng FieldValue.arrayRemove để xóa một phần tử khỏi mảng
+    await _plansCollection.doc(dayId).update({
+      'entries': FieldValue.arrayRemove([entryToRemove.toMap()])
+    });
+  }
+
+  // HÀM MỚI: Xóa toàn bộ một ngày
+  Future<void> deleteDailyPlan(String dayId) async {
+    // Nếu ngày bị xóa đang được chọn, hãy bỏ chọn nó
+    if (_selectedDayId == dayId) {
+      _selectedDayId = null;
+      // Cần notifyListeners ở đây vì đây là thay đổi state cục bộ
+      notifyListeners();
+    }
+    await _plansCollection.doc(dayId).delete();
+  }
+
+  // TODO: Cần thêm hàm updateDailyPlan để logic Sửa ngày hoạt động
+
 
   // PHẦN CŨ
 

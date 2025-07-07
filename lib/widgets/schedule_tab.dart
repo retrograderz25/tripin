@@ -7,6 +7,8 @@ import '../models/location_item.dart';
 import '../providers/plan_provider.dart';
 import 'package:intl/intl.dart';
 
+import 'add_edit_day_dialog.dart';
+
 class ScheduleTab extends StatelessWidget {
   const ScheduleTab({super.key});
 
@@ -45,8 +47,11 @@ class ScheduleTab extends StatelessWidget {
                   icon: const Icon(Icons.add_box_rounded, color: Colors.teal),
                   onPressed: () {
                     // TODO: Hiển thị form thêm ngày mới
-                    // Tạm thời thêm ngày hôm nay
-                    context.read<PlanProvider>().addDailyPlan(DateTime.now(), "Ngày mới");
+                    // HIỂN THỊ DIALOG
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => const AddEditDayDialog(),
+                    );
                   },
                   tooltip: 'Thêm ngày mới',
                 )
@@ -83,6 +88,31 @@ class ScheduleTab extends StatelessWidget {
                       color: isSelected ? Colors.teal.withOpacity(0.2) : null,
                       child: ListTile(
                         title: Text(day.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        // Thêm nút xóa cho cả ngày
+                        trailing: IconButton(
+                          icon: const Icon(Icons.delete_outline, color: Colors.red),
+                          onPressed: () {
+                            // Thêm dialog xác nhận trước khi xóa
+                            showDialog(
+                              context: context,
+                              builder: (dCtx) => AlertDialog(
+                                title: const Text('Xác nhận xóa'),
+                                content: Text('Bạn có chắc muốn xóa "${day.title}" và tất cả hoạt động trong đó?'),
+                                actions: [
+                                  TextButton(onPressed: () => Navigator.of(dCtx).pop(), child: const Text('Hủy')),
+                                  TextButton(
+                                    onPressed: () {
+                                      context.read<PlanProvider>().deleteDailyPlan(day.id);
+                                      Navigator.of(dCtx).pop();
+                                    },
+                                    child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          tooltip: 'Xóa ngày này',
+                        ),
                         subtitle: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -91,9 +121,29 @@ class ScheduleTab extends StatelessWidget {
                             if (day.entries.isEmpty)
                               const Text('Chưa có hoạt động', style: TextStyle(fontStyle: FontStyle.italic)),
                             for (var entry in day.entries)
-                              Text('• ${entry.locationName}', style: const TextStyle(fontSize: 13)),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(child: Text('• ${entry.locationName}', style: const TextStyle(fontSize: 13))),
+                                  // Nút xóa nhỏ cho từng hoạt động
+                                  SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      iconSize: 16,
+                                      icon: const Icon(Icons.close, color: Colors.grey),
+                                      onPressed: () {
+                                        context.read<PlanProvider>().removeLocationFromSchedule(day.id, entry);
+                                      },
+                                      tooltip: 'Xóa hoạt động này',
+                                    ),
+                                  ),
+                                ],
+                              ),
                           ],
                         ),
+
                         onTap: () {
                           provider.selectDay(day.id);
                         },
