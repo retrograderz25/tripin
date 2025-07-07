@@ -26,6 +26,6 @@ flutter pub get
 
 # 5. Build dự án Flutter Web
 echo ">>>> Building Flutter web..."
-flutter build web --release --no-tree-shake-icons --web-renderer html
+flutter build web --release --no-tree-shake-icons
 
 echo ">>>> Build successful!"
