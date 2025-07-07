@@ -3,10 +3,62 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/location_item.dart';
+import '../models/daily_plan.dart';
+import '../models/schedule_entry.dart';
 
 class PlanProvider with ChangeNotifier {
-  final CollectionReference _locationsCollection =
-  FirebaseFirestore.instance.collection('locations');
+  final CollectionReference _locationsCollection = FirebaseFirestore.instance.collection('locations');
+  final CollectionReference _plansCollection = FirebaseFirestore.instance.collection('plans');
+  // --- PHẦN MỚI: QUẢN LÝ LỊCH TRÌNH ---
+
+  String? _selectedDayId;
+  String? get selectedDayId => _selectedDayId;
+
+  // HÀM MỚI: Đọc lịch trình từ Firestore
+  Stream<List<DailyPlan>> getDailyPlansStream() {
+    return _plansCollection
+        .orderBy('date') // Sắp xếp các ngày theo thứ tự thời gian
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => DailyPlan.fromMap(doc.data() as Map<String, dynamic>, doc.id))
+        .toList());
+  }
+
+  // HÀM MỚI: Thêm một ngày mới
+  Future<void> addDailyPlan(DateTime date, String title) async {
+    final newPlan = DailyPlan(
+      id: _plansCollection.doc().id, // Firestore tự tạo ID
+      date: date,
+      title: title,
+      entries: [],
+    );
+    // Dùng ID đã tạo để set document
+    await _plansCollection.doc(newPlan.id).set(newPlan.toMap());
+  }
+
+  // HÀM CẬP NHẬT: Thêm một địa điểm vào lịch trình
+  Future<void> addLocationToSchedule(LocationItem location) async {
+    if (_selectedDayId == null) return;
+
+    final newEntry = ScheduleEntry(
+      entryId: DateTime.now().millisecondsSinceEpoch.toString(),
+      locationId: location.id,
+      locationName: location.name,
+    );
+
+    // Dùng FieldValue.arrayUnion để thêm một phần tử vào mảng 'entries'
+    await _plansCollection.doc(_selectedDayId).update({
+      'entries': FieldValue.arrayUnion([newEntry.toMap()])
+    });
+    // Không cần notifyListeners() vì StreamBuilder sẽ tự cập nhật
+  }
+
+  void selectDay(String? dayId) {
+    _selectedDayId = dayId;
+    notifyListeners();
+  }
+
+  // PHẦN CŨ
 
   Stream<List<LocationItem>> getLocationsStream() {
     return _locationsCollection.snapshots().map((snapshot) {
