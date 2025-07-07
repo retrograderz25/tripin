@@ -87,7 +87,28 @@ class ScheduleTab extends StatelessWidget {
                       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       color: isSelected ? Colors.teal.withOpacity(0.2) : null,
                       child: ListTile(
-                        title: Text(day.title, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        title: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                day.title,
+                                style: const TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            // Nút sửa ngày
+                            IconButton(
+                              icon: const Icon(Icons.edit, size: 20, color: Colors.black54),
+                              onPressed: () {
+                                // Mở dialog ở chế độ sửa, truyền ngày hiện tại vào
+                                showDialog(
+                                  context: context,
+                                  builder: (ctx) => AddEditDayDialog(dailyPlan: day),
+                                );
+                              },
+                              tooltip: 'Sửa ngày',
+                            ),
+                          ],
+                        ),
                         // Thêm nút xóa cho cả ngày
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline, color: Colors.red),

@@ -55,6 +55,11 @@ class _AddEditDayDialogState extends State<AddEditDayDialog> {
       final provider = context.read<PlanProvider>();
       if (isEditing) {
         // TODO: Implement update logic in provider
+        provider.updateDailyPlan(
+          widget.dailyPlan!.id, // ID của ngày cần sửa
+          _titleController.text, // Tiêu đề mới từ form
+          _selectedDate,         // Ngày mới từ form
+        );
       } else {
         provider.addDailyPlan(_selectedDate, _titleController.text);
       }
