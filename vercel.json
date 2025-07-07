@@ -13,6 +13,5 @@
       "src": "/(.*)",
       "dest": "/index.html"
     }
-  ],
-  "installCommand": "if [ -d 'build/web' ]; then rm -r build/web; fi && flutter pub get && flutter build web --release --no-tree-shake-icons"
+  ]
 }
