@@ -1,23 +1,8 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "pubspec.yaml",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "build/web"
-      }
-    }
-  ],
   "routes": [
     {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(.*\\..*)",
-      "headers": { "cache-control": "s-maxage=31536000,immutable" },
-      "continue": true
+      "src": "/(flutter_bootstrap.js|main.dart.js|manifest.json|flutter.js|canvaskit/.*|assets/.*)",
+      "dest": "/$1"
     },
     {
       "src": "/(.*)",
