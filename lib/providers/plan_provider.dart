@@ -9,6 +9,11 @@ import '../models/location_item.dart';
 import '../models/daily_plan.dart';
 import '../models/schedule_entry.dart';
 
+import 'package:excel/excel.dart';
+import 'package:intl/intl.dart';
+import 'package:universal_html/html.dart' as html;
+import 'package:flutter/foundation.dart' show kIsWeb;
+
 class PlanProvider with ChangeNotifier {
   // =======================================================
   // KHAI BÁO CÁC DỊCH VỤ FIREBASE
@@ -149,4 +154,94 @@ class PlanProvider with ChangeNotifier {
       'entries': FieldValue.arrayRemove([entryToRemove.toMap()])
     });
   }
+
+  // =======================================================
+// EXPORT TO EXCEL
+// =======================================================
+  Future<void> exportDailyPlanToExcel(DailyPlan dayPlan, List<LocationItem> allLocations) async {
+    if (!kIsWeb) {
+      print("Export to Excel is currently only supported on Web.");
+      return;
+    }
+
+    // 1. Tạo đối tượng Excel
+    var excel = Excel.createExcel();
+    Sheet sheetObject = excel['Lịch trình'];
+
+    // 2. Thiết kế tiêu đề chính
+    CellStyle titleStyle = CellStyle(bold: true, fontSize: 18, verticalAlign: VerticalAlign.Center);
+    sheetObject.appendRow([TextCellValue(dayPlan.title)]);
+    // Định dạng hàng tiêu đề chính
+    sheetObject.rows.last.forEach((cell) => cell?.cellStyle = titleStyle);
+
+    sheetObject.appendRow([TextCellValue(DateFormat('EEEE, dd/MM/yyyy', 'vi_VN').format(dayPlan.date))]);
+    sheetObject.appendRow([]); // Dòng trống
+
+    // 3. Tạo tiêu đề cho bảng
+    CellStyle headerStyle = CellStyle(
+      bold: true,
+      // Sửa lại mã màu hex
+      backgroundColorHex: ExcelColor.grey,
+      horizontalAlign: HorizontalAlign.Center,
+      verticalAlign: VerticalAlign.Center,
+    );
+    List<String> header = [
+      'STT', 'Tên hoạt động', 'Địa chỉ', 'Thời gian (phút)',
+      'Ghi chú', 'Chi phí (VNĐ)', 'Link tham khảo'
+    ];
+    sheetObject.appendRow(header.map((e) => TextCellValue(e)).toList());
+    // Định dạng hàng header
+    sheetObject.rows.last.forEach((cell) => cell?.cellStyle = headerStyle);
+
+    // 4. Thêm dữ liệu cho mỗi hoạt động
+    double totalCost = 0;
+    for (int i = 0; i < dayPlan.entries.length; i++) {
+      final entry = dayPlan.entries[i];
+      final location = allLocations.firstWhere((loc) => loc.id == entry.locationId, orElse: () => LocationItem(id: '', name: ''));
+      totalCost += location.estimatedCost;
+
+      List<CellValue> row = [
+        IntCellValue(i + 1),
+        TextCellValue(location.name),
+        TextCellValue(location.address),
+        IntCellValue(entry.activityDuration.inMinutes),
+        TextCellValue(entry.scheduleNotes.isNotEmpty ? entry.scheduleNotes : location.notes),
+        DoubleCellValue(location.estimatedCost),
+        TextCellValue(location.referenceUrl),
+      ];
+      sheetObject.appendRow(row);
+    }
+
+    // 5. Thêm dòng tổng kết
+    CellStyle totalStyle = CellStyle(bold: true);
+    sheetObject.appendRow([]); // Dòng trống
+    List<CellValue> totalRow = [
+      TextCellValue(''), TextCellValue(''), TextCellValue(''),
+      TextCellValue(''), TextCellValue('TỔNG CỘNG'), DoubleCellValue(totalCost)
+    ];
+    sheetObject.appendRow(totalRow);
+    // Định dạng hàng tổng cộng
+    sheetObject.rows.last.forEach((cell) => cell?.cellStyle = totalStyle);
+
+    // 6. Tự động điều chỉnh độ rộng các cột
+    for (var i = 0; i < header.length; i++) {
+      // Sửa lại tên hàm
+      sheetObject.setColumnAutoFit(i);
+    }
+
+    // 7. Lưu và tải file về
+    final safeTitle = dayPlan.title.replaceAll(RegExp(r'[^\w\s]+'),'').replaceAll(' ', '_');
+    final fileName = "Lich_trinh_$safeTitle.xlsx";
+
+    final bytes = excel.save();
+    if (bytes != null) {
+      final blob = html.Blob([bytes], 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      final url = html.Url.createObjectUrlFromBlob(blob);
+      final anchor = html.AnchorElement(href: url)
+        ..setAttribute("download", fileName)
+        ..click();
+      html.Url.revokeObjectUrl(url);
+    }
+  }
+
 }
