@@ -175,7 +175,7 @@ class _AddLocationFormState extends State<AddLocationForm> {
                 onPressed: _submitData,
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16),
-                  backgroundColor: Colors.teal,
+                  backgroundColor: Colors.lightBlueAccent,
                 ),
                   child: Text(isEditing ? 'Lưu thay đổi' : 'Lưu địa điểm'),
               ),

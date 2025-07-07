@@ -53,15 +53,18 @@ class _AddEditDayDialogState extends State<AddEditDayDialog> {
   void _submit() {
     if (_formKey.currentState!.validate()) {
       final provider = context.read<PlanProvider>();
+      final title = _titleController.text;
+
       if (isEditing) {
-        // TODO: Implement update logic in provider
-        provider.updateDailyPlan(
-          widget.dailyPlan!.id, // ID của ngày cần sửa
-          _titleController.text, // Tiêu đề mới từ form
-          _selectedDate,         // Ngày mới từ form
+        provider.updateDailyPlan(widget.dailyPlan!.id, title, _selectedDate);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã cập nhật "$title"')),
         );
       } else {
-        provider.addDailyPlan(_selectedDate, _titleController.text);
+        provider.addDailyPlan(_selectedDate, title);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Đã thêm "$title"')),
+        );
       }
       Navigator.of(context).pop();
     }

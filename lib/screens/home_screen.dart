@@ -44,8 +44,8 @@ class _HomeScreenState extends State<HomeScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Our Journey Planner'),
-        backgroundColor: Colors.teal,
+        title: const Text('trip planner'),
+        backgroundColor: Colors.lightBlueAccent,
         bottom: TabBar(
           controller: _tabController,
           indicatorColor: Colors.white,
@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddLocationForm(context),
-        backgroundColor: Colors.teal,
+        backgroundColor: Colors.lightBlueAccent,
         child: const Icon(Icons.add),
         tooltip: 'Thêm địa điểm mới',
       ),

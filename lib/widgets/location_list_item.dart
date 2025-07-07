@@ -158,12 +158,12 @@ class LocationListItem extends StatelessWidget {
             Row(
               children: [
                 // Hiển thị loại địa điểm
-                Icon(_getCategoryIcon(location.category), color: Colors.teal, size: 20),
+                Icon(_getCategoryIcon(location.category), color: Colors.blueAccent, size: 20),
                 const SizedBox(width: 4),
                 Text(
                   // Chuyển 'ItemCategory.sightseeing' thành 'Sightseeing'
                   toBeginningOfSentenceCase(location.category.name) ?? '',
-                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.teal),
+                  style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueAccent),
                 ),
 
                 const Spacer(), // Đẩy phần chi phí sang phải
